@@ -1,0 +1,59 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ canvas.name }}</title>
+  <link rel="stylesheet" href="{% static 'core/styles.css' %}">
+  <style>
+    body{font-family:system-ui,sans-serif;margin:0;display:flex;flex-direction:column;height:100vh}
+    #toolbar{padding:.5rem .75rem;background:#f3f4f6;display:flex;gap:.75rem;flex-wrap:wrap;align-items:center}
+    #toolbar input[type="number"]{width:80px}
+    #toolbar input[type="text"]{width:100px}
+    #toolbar button{padding:.25rem .75rem;cursor:pointer}
+    #canvas-wrapper{flex:1;overflow:auto;display:flex;justify-content:center;align-items:center;background:#e5e7eb}
+    canvas{image-rendering:pixelated;border:4px solid #000;background:#fff}
+    #info{font-size:.9rem;padding:.5rem .75rem;background:#1f2937;color:#e5e7eb}
+  </style>
+  <!-- глобальные константы для JS -->
+  <script>
+    const CANVAS_ID = {{ canvas.id }};
+    const WS_URL    = `ws://${location.host}/ws/canvas/${CANVAS_ID}/`;
+    const CANVAS_W  = {{ canvas.width }};
+    const CANVAS_H  = {{ canvas.height }};
+  </script>
+  <!-- загрузка JS ОДИН раз, как ES-модуль -->
+  <script type="module" src="{% static 'core/js/canvas.js' %}"></script>
+</head>
+
+<body>
+  <div id="toolbar">
+    <!-- координаты -->
+    <label>X: <input id="input-x" type="number" min="0" max="{{ canvas.width  | add:'-1' }}"></label>
+    <label>Y: <input id="input-y" type="number" min="0" max="{{ canvas.height | add:'-1' }}"></label>
+
+    <!-- цвет -->
+    <label>#RGB: <input id="input-hex" type="text" placeholder="#RRGGBB"></label>
+    <span>or</span>
+    <label>R: <input id="input-r" type="number" min="0" max="255"></label>
+    <label>G: <input id="input-g" type="number" min="0" max="255"></label>
+    <label>B: <input id="input-b" type="number" min="0" max="255"></label>
+
+    <!-- масштаб -->
+    <label>Scale:
+      <input id="input-scale" type="number" min="1" max="40" value="4" style="width:60px">
+    </label>
+
+    <button id="btn-set">Set Pixel</button>
+  </div>
+
+  <div id="canvas-wrapper">
+    <canvas id="pixel-canvas" width="{{ canvas.width }}" height="{{ canvas.height }}"></canvas>
+  </div>
+
+  <div id="info">
+    Canvas size: {{ canvas.width }} × {{ canvas.height }} px. &nbsp;
+    Coordinates: origin (0,0) is bottom-left.
+  </div>
+</body>
+</html>

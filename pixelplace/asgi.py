@@ -1,16 +1,20 @@
-"""
-ASGI config for pixelplace project.
-
-It exposes the ASGI callable as a module-level variable named ``application``.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/5.2/howto/deployment/asgi/
-"""
-
-import os
-
+import os, django
+from channels.routing import ProtocolTypeRouter, URLRouter
+from channels.auth import AuthMiddlewareStack
 from django.core.asgi import get_asgi_application
+from django.contrib.staticfiles.handlers import ASGIStaticFilesHandler
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pixelplace.settings')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "pixelplace.settings")
+django.setup()
 
-application = get_asgi_application()
+from core.routing import websocket_urlpatterns 
+
+django_asgi = get_asgi_application()
+
+application = ProtocolTypeRouter({
+    "http": ASGIStaticFilesHandler(django_asgi),
+
+    "websocket": AuthMiddlewareStack(
+        URLRouter(websocket_urlpatterns)
+    ),
+})
