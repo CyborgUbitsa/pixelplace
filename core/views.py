@@ -2,7 +2,6 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from PIL import Image
 from django.contrib.auth.decorators import permission_required
-from django.shortcuts import render
 from .models import PixelChange
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
@@ -17,13 +16,15 @@ from core.tile_utils import (
     decompress_tile,
     set_pixel,
 )
-from django.shortcuts import render, get_object_or_404
 from .models import Canvas, PixelChange
 from .utils import is_moderator
 from .forms import SubscriptionForm
 from django.shortcuts import redirect
 from .models import Canvas, CanvasTile, TILE_SIZE
 from .forms import SignupForm  
+from .models import UserSuspension
+from django.contrib.auth.views import LoginView
+from django.utils.timezone import now
 
 def canvas_view(request, canvas_id: int):
     canvas = get_object_or_404(Canvas, pk=canvas_id)
@@ -106,3 +107,21 @@ def subscribe_canvas(request, canvas_id):
             sub.save()
     return redirect("canvas", canvas_id=canvas_id)
 
+def suspended_view(request):
+    return render(request, "core/suspended.html")
+
+class CustomLoginView(LoginView):
+    template_name = "core/login.html"
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        user = self.request.user
+
+        suspended = UserSuspension.objects.filter(
+            user=user,
+            start__lte=now(),
+            end__gt=now()
+        ).exists()
+        if suspended:
+            return redirect("suspended")   
+        return response

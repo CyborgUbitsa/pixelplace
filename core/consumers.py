@@ -36,6 +36,19 @@ class CanvasConsumer(AsyncJsonWebsocketConsumer):
     async def receive_json(self, data, **kwargs):
         print(">>> receive_json", data)
 
+        user = self.scope.get("user")
+
+        if user and user.is_authenticated:
+            suspended = await sync_to_async(
+                lambda: user.suspensions.filter(
+                    start__lte=now_dj(), end__gt=now_dj()
+                ).exists()
+            )()
+            if suspended:
+                print("caraul")
+                await self.send_json({"error": "suspended"})
+                return
+
         user = self.scope["user"]
         is_artist = (
             user.is_authenticated

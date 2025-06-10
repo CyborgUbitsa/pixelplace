@@ -84,4 +84,21 @@ class CanvasSubscription(models.Model):
 
     def __str__(self):
         return f"{self.email} → Canvas #{self.canvas_id}"
+    
+class UserSuspension(models.Model):
+    user      = models.ForeignKey(User, on_delete=models.CASCADE, related_name="suspensions")
+    start     = models.DateTimeField(auto_now_add=True)
+    end       = models.DateTimeField(help_text="When suspension ends")
+    reason    = models.CharField(max_length=200, blank=True)
+
+    class Meta:
+        ordering = ["-start"]
+
+    def is_active(self):
+        from django.utils.timezone import now
+        return self.start <= now() < self.end
+
+    def __str__(self):
+        status = "active" if self.is_active() else "expired"
+        return f"{self.user.username}: {self.start} → {self.end} ({status})"
 

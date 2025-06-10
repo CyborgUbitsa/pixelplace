@@ -4,6 +4,7 @@ from django.shortcuts import redirect
 from django.contrib.auth import views as auth_views
 from django.urls import path, include
 from core import views as core_views 
+from core.views import CustomLoginView
 
 urlpatterns = [
     path("", core_views.home, name="home"),
@@ -18,9 +19,8 @@ urlpatterns = [
 
     path(
         "login/",
-        auth_views.LoginView.as_view(
-            template_name="core/login.html",
-            next_page=reverse_lazy("home"),
+        CustomLoginView.as_view(
+            next_page=reverse_lazy("home")
         ),
         name="login",
     ),
@@ -39,6 +39,7 @@ urlpatterns = [
     name="subscribe_canvas",
     ),
     path("i18n/", include("django.conf.urls.i18n")),
+    path("suspended/", core_views.suspended_view, name="suspended"),
 ]
 
 def redirect_404(request, exception):
