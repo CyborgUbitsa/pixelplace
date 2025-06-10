@@ -1,0 +1,30 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Sign in · PixelPlace</title>
+  <link rel="stylesheet" href="{% static 'core/styles.css' %}">
+  <style>
+    body{display:flex;justify-content:center;align-items:center;height:100vh;font-family:system-ui,sans-serif}
+    form{border:1px solid #ddd;padding:2rem 3rem;border-radius:12px;min-width:280px}
+    label{display:block;margin-bottom:.5rem;font-weight:600}
+    input{width:100%;padding:.4rem .5rem;margin-bottom:1rem;border:1px solid #ccc;border-radius:6px}
+    button{padding:.4rem 1rem;border:none;background:#2563eb;color:#fff;border-radius:6px;cursor:pointer;width:100%}
+  </style>
+</head>
+<body>
+  <form method="post">
+    <h2 style="text-align:center;margin-top:0">Login</h2>
+    {% csrf_token %}
+    {% if form.errors %}
+      <p style="color:#b91c1c">Invalid username / password</p>
+    {% endif %}
+    <label>Username</label>
+    {{ form.username }}
+    <label>Password</label>
+    {{ form.password }}
+    <button type="submit">Sign in</button>
+  </form>
+</body>
+</html>

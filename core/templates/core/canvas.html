@@ -1,4 +1,5 @@
 {% load static %}
+{% load static auth_extras %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE }}">
 <head>
@@ -15,44 +16,100 @@
     canvas{image-rendering:pixelated;border:4px solid #000;background:#fff}
     #info{font-size:.9rem;padding:.5rem .75rem;background:#1f2937;color:#e5e7eb}
   </style>
-  <!-- глобальные константы для JS -->
   <script>
     const CANVAS_ID = {{ canvas.id }};
     const WS_URL    = `ws://${location.host}/ws/canvas/${CANVAS_ID}/`;
     const CANVAS_W  = {{ canvas.width }};
     const CANVAS_H  = {{ canvas.height }};
   </script>
-  <!-- загрузка JS ОДИН раз, как ES-модуль -->
   <script type="module" src="{% static 'core/js/canvas.js' %}"></script>
 </head>
 
 <body>
+
+  <div style="padding:.5rem .75rem;background:#111;color:#eee">
+    {% if user.is_authenticated %}
+      Welcome, {{ user.username }} —
+      <form action="{% url 'logout' %}" method="post" style="display:inline">
+        {% csrf_token %}
+        <button type="submit"
+          style="background:none;border:none;color:#3b82f6;cursor:pointer;text-decoration:underline;padding:0">
+          Logout
+        </button>
+      </form>
+    {% else %}
+      <a href="{% url 'login' %}?next={{ request.path }}"
+         style="color:#3b82f6">Login</a>
+    {% endif %}
+    &nbsp;|&nbsp; <a href="{% url 'home' %}" style="color:#a5b4fc">Canvases</a>
+</div>
+
+{% if not user.is_authenticated %}
+  <a href="{% url 'signup' %}?next={{ request.path }}" style="color:#3b82f6">Sign up</a> |
+  <a href="{% url 'login'  %}?next={{ request.path }}" style="color:#3b82f6">Login</a>
+{% else %}
+<p>logged in</p>
+{% endif %}
+
+   {% if user|has_group:"artist" %}
   <div id="toolbar">
-    <!-- координаты -->
     <label>X: <input id="input-x" type="number" min="0" max="{{ canvas.width  | add:'-1' }}"></label>
     <label>Y: <input id="input-y" type="number" min="0" max="{{ canvas.height | add:'-1' }}"></label>
 
-    <!-- цвет -->
     <label>#RGB: <input id="input-hex" type="text" placeholder="#RRGGBB"></label>
     <span>or</span>
     <label>R: <input id="input-r" type="number" min="0" max="255"></label>
     <label>G: <input id="input-g" type="number" min="0" max="255"></label>
     <label>B: <input id="input-b" type="number" min="0" max="255"></label>
 
-    <!-- масштаб -->
     <label>Scale:
       <input id="input-scale" type="number" min="1" max="40" value="4" style="width:60px">
     </label>
 
     <button id="btn-set">Set Pixel</button>
   </div>
+  {% else %}
+    <label>Scale:
+      <input id="input-scale" type="number" min="1" max="40" value="4" style="width:60px">
+    </label>
+  {% endif %}
+  
 
   <div id="canvas-wrapper">
     <canvas id="pixel-canvas" width="{{ canvas.width }}" height="{{ canvas.height }}"></canvas>
   </div>
 
+  {% if is_mod %}
+  <h3>Audit log</h3>
+  <div style="max-height:250px;overflow:auto;border:1px solid #ccc">
+    <table style="width:100%;border-collapse:collapse;font-size:.85rem">
+      <thead>
+        <tr style="background:#f3f4f6">
+          <th>When</th><th>User</th><th>X</th><th>Y</th><th>Color</th>
+        </tr>
+      </thead>
+      <tbody id="audit-body">
+        {% for r in audit_rows %}
+          <tr>
+            <td>{{ r.created_at|date:"Y-m-d H:i:s" }}</td>
+            <td>{{ r.user.username|default:"—" }}</td>
+            <td>{{ r.x }}</td><td>{{ r.y }}</td>
+            <td>
+              <span style="display:inline-block;width:14px;height:14px;
+                           background:#{{ r.color|stringformat:"06x" }};
+                           border:1px solid #0003;margin-right:.3rem"></span>
+              #{{ r.color|stringformat:"06x" }}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endif %}
+
+
   <div id="info">
-    Canvas size: {{ canvas.width }} × {{ canvas.height }} px. &nbsp;
+    Canvas size: {{ canvas.width }} x {{ canvas.height }} px. &nbsp;
     Coordinates: origin (0,0) is bottom-left.
   </div>
 </body>

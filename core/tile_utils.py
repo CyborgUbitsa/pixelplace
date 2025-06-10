@@ -15,3 +15,7 @@ def set_pixel(buf: bytearray, local_x: int, local_y: int, rgb: int):
     row_from_top = TILE_SIZE - 1 - local_y          
     off = (row_from_top * TILE_SIZE + local_x) * 3 
     buf[off : off + 3] = (r, g, b)
+
+def new_empty_tile() -> bytes:
+    raw = bytes([255, 255, 255]) * (TILE_SIZE * TILE_SIZE)
+    return compress_tile(raw)

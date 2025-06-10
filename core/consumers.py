@@ -3,7 +3,7 @@ import time
 from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from django.db import transaction
-
+from django.utils.timezone import now as now_dj
 from .models import Canvas, CanvasTile, PixelChange, TILE_SIZE
 from .tile_utils import decompress_tile, compress_tile, set_pixel
 
@@ -38,9 +38,13 @@ class CanvasConsumer(AsyncJsonWebsocketConsumer):
 
         user = self.scope["user"]
         is_artist = (
-            user.is_authenticated and
-            (user.is_superuser or await user.groups.afilter(name="artist").aexists())
-        )
+            user.is_authenticated
+            and (
+                user.is_superuser or
+                await user.groups.filter(name="artist").aexists()
+                )
+            )
+
         print("   artist?", is_artist)
         if not is_artist:
             await self.send_json({"error": "permission_denied"})
@@ -83,9 +87,19 @@ class CanvasConsumer(AsyncJsonWebsocketConsumer):
                 canvas_id=self.canvas_id, user_id=user.id, x=x, y=y, color=color
             )
 
+        
+
+        
+
         await _write_tile()
 
-        payload = {"x": x, "y": y, "color": color}
+        payload = {
+                "x": x,
+                "y": y,
+                "color": color,
+                "user": user.username or "—",
+                "ts":   now_dj().isoformat(timespec="seconds"),
+                }
         await self.channel_layer.group_send(
             self.group_name, {"type": "pixel_update", "payload": payload}
         )

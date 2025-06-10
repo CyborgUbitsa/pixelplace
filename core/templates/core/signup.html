@@ -1,0 +1,38 @@
+{% load static %}
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Sign up · PixelPlace</title>
+  <link rel="stylesheet" href="{% static 'core/styles.css' %}">
+  <style>
+    body{font-family:system-ui,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh}
+    form{border:1px solid #ddd;padding:2rem 3rem;border-radius:12px;min-width:300px}
+    label{display:block;margin:.35rem 0 .15rem;font-weight:600}
+    input{width:100%;padding:.45rem;border:1px solid #ccc;border-radius:6px;margin-bottom:.9rem}
+    .error{color:#b91c1c;font-size:.88rem;margin-top:-.5rem;margin-bottom:.7rem}
+    button{width:100%;padding:.55rem;border:none;background:#2563eb;color:#fff;border-radius:6px;cursor:pointer}
+  </style>
+</head>
+<body>
+  <form method="post" action="">
+    {% csrf_token %}     {# ← ОБЯЗАТЕЛЬНО! #}
+
+    <label>Username</label>
+    {{ form.username }}
+    {% if form.username.errors %}<div class="error">{{ form.username.errors.0 }}</div>{% endif %}
+
+    <label>Password</label>
+    {{ form.password1 }}
+
+    <label>Repeat password</label>
+    {{ form.password2 }}
+    {% if form.password2.errors %}<div class="error">{{ form.password2.errors.0 }}</div>{% endif %}
+
+    {% if next %}
+      <input type="hidden" name="next" value="{{ next }}">
+    {% endif %}
+
+    <button type="submit">Sign up</button>
+  </form>
+</body>
+</html>

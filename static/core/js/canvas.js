@@ -5,7 +5,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const q = id => document.getElementById(id);
   const inpX = q("input-x"), inpY = q("input-y");
   const inpHex = q("input-hex"), inpR = q("input-r"), inpG = q("input-g"), inpB = q("input-b");
-  const inpScale = q("input-scale"), btnSet = q("btn-set");
+  const inpScale = q("input-scale");
+  const btnSet = q("btn-set");
   const canvas = q("pixel-canvas"), ctx = canvas.getContext("2d");
 
   let SCALE = +inpScale.value || 4;
@@ -64,18 +65,18 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     socket.onmessage = e => {
   const m = JSON.parse(e.data);
-  if (!Number.isInteger(m.color) || !Number.isInteger(m.x) || !Number.isInteger(m.y)) {
-    console.warn("skip WS packet", m);
-    return;
+  if ("x" in m && "y" in m && "color" in m) {
+      drawPixel(m.x, m.y, intToHex(m.color));
+      appendAuditRow(m);
   }
-  drawPixel(m.x, m.y, intToHex(m.color));
 };
 
 }
 
+  if (btnSet) {
   btnSet.addEventListener("click", () => {
     const coords = parseCoords();
-    const col = parseColor();
+    const col    = parseColor();
     if (!coords || !col) {
       console.warn("not-sent: invalid coords or color", { coords, col });
       return;
@@ -86,10 +87,30 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     drawPixel(coords.x, coords.y, col.hex);
-    const payload = { x: coords.x, y: coords.y, color: col.int };
-    socket.send(JSON.stringify(payload));
-    console.log("outgoing", payload);
+    socket.send(JSON.stringify({ x: coords.x, y: coords.y, color: col.int }));
+    console.log("outgoing", coords, col.int);
   });
+}
+
+function appendAuditRow(m) {
+  const table = document.getElementById("audit-body");  
+  if (!table) return;
+  const row = document.createElement("tr");
+  row.innerHTML = `
+     <td>${m.ts}</td>
+     <td>${m.user}</td>
+     <td>${m.x}</td>
+     <td>${m.y}</td>
+     <td>
+        <span style="display:inline-block;width:14px;height:14px;
+                     background:${intToHex(m.color)};
+                     border:1px solid #0003;margin-right:.3rem"></span>
+        ${intToHex(m.color)}
+     </td>`;
+  table.prepend(row);
+  if (table.rows.length > 500) table.deleteRow(-1);
+}
+
 
   (async () => {
     await loadSnapshot();
