@@ -45,8 +45,7 @@
 </div>
 
 {% if not user.is_authenticated %}
-  <a href="{% url 'signup' %}?next={{ request.path }}" style="color:#3b82f6">Sign up</a> |
-  <a href="{% url 'login'  %}?next={{ request.path }}" style="color:#3b82f6">Login</a>
+  <a href="{% url 'signup' %}?next={{ request.path }}" style="color:#3b82f6">Sign up</a>
 {% else %}
 <p>logged in</p>
 {% endif %}
@@ -67,11 +66,22 @@
     </label>
 
     <button id="btn-set">Set Pixel</button>
+    <a
+  href="{% url 'snap_png' canvas.id %}"
+  download="canvas-{{ canvas.id }}.png"
+  style="margin: .5rem; padding: .4rem .8rem; background:#2563eb; color:#fff; border-radius:4px; text-decoration:none;"
+>Download PNG</a>
+    
   </div>
   {% else %}
     <label>Scale:
       <input id="input-scale" type="number" min="1" max="40" value="4" style="width:60px">
     </label>
+    <a
+  href="{% url 'snap_png' canvas.id %}"
+  download="canvas-{{ canvas.id }}.png"
+  style="margin: .5rem; padding: .4rem .8rem; background:#2563eb; color:#fff; border-radius:4px; text-decoration:none;"
+>Download PNG</a>
   {% endif %}
   
 
@@ -112,5 +122,14 @@
     Canvas size: {{ canvas.width }} x {{ canvas.height }} px. &nbsp;
     Coordinates: origin (0,0) is bottom-left.
   </div>
+
+  <form action="{% url 'subscribe_canvas' canvas.id %}" method="post" style="margin:.5rem;">
+  {% csrf_token %}
+  {{ subscription_form.email }}
+  <button type="submit" style="padding:.3rem .6rem">Subscribe</button>
+  {% if subscription_form.errors %}
+    <div style="color:#b91c1c">{{ subscription_form.errors.email.0 }}</div>
+  {% endif %}
+</form>
 </body>
 </html>

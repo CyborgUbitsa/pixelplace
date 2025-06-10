@@ -20,7 +20,8 @@ from core.tile_utils import (
 from django.shortcuts import render, get_object_or_404
 from .models import Canvas, PixelChange
 from .utils import is_moderator
-
+from .forms import SubscriptionForm
+from django.shortcuts import redirect
 from .models import Canvas, CanvasTile, TILE_SIZE
 from .forms import SignupForm  
 
@@ -30,7 +31,7 @@ def canvas_view(request, canvas_id: int):
     is_artist    = request.user.is_authenticated and \
                    request.user.groups.filter(name="artist").exists()
     is_mod       = is_moderator(request.user)
-
+    form = SubscriptionForm()
     audit_rows = None
     if is_mod:
         audit_rows = (
@@ -48,6 +49,7 @@ def canvas_view(request, canvas_id: int):
             "is_artist": is_artist,
             "is_mod": is_mod,
             "audit_rows": audit_rows,
+            "subscription_form": form,
         },
     )
 
@@ -94,3 +96,13 @@ def signup(request):
         form = SignupForm()
 
     return render(request, "core/signup.html", {"form": form})
+
+def subscribe_canvas(request, canvas_id):
+    if request.method == "POST":
+        form = SubscriptionForm(request.POST)
+        if form.is_valid():
+            sub = form.save(commit=False)
+            sub.canvas_id = canvas_id
+            sub.save()
+    return redirect("canvas", canvas_id=canvas_id)
+

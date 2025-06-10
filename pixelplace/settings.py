@@ -46,6 +46,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    "django.middleware.locale.LocaleMiddleware",
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -150,8 +151,21 @@ CHANNEL_LAYERS = {
     }
 }
 
+USE_I18N = True
+USE_L10N = True
+
 LANGUAGES = [
     ("en", "English"),
     ("lv", "Latviešu"),
 ]
+
 LOCALE_PATHS = [BASE_DIR / "locale"]
+
+EMAIL_HOST        = "smtp.mailersend.net"  
+EMAIL_PORT        = 2525                    
+EMAIL_USE_TLS     = True        
+
+EMAIL_HOST_USER     = "MS_PbY1Pr@test-vz9dlem1yep4kj50.mailersend.net"
+EMAIL_HOST_PASSWORD = "mssp.G4gblML.0r83ql3vv90gzw1j.igjlqho"
+
+DEFAULT_FROM_EMAIL  = "PixelPlace <no-reply@test-vz9dlem1yep4kj50.mlsender.net>"

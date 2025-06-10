@@ -4,6 +4,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.forms.utils import ErrorList
+from .models import CanvasSubscription
 
 class SignupForm(UserCreationForm):
     allow_simple = forms.BooleanField(
@@ -30,3 +31,14 @@ class SignupForm(UserCreationForm):
                 validate_password(password, self.instance)
             except ValidationError as exc:
                 self._update_errors(ErrorList(exc.messages))
+
+    
+
+
+class SubscriptionForm(forms.ModelForm):
+    class Meta:
+        model = CanvasSubscription
+        fields = ["email"]
+        widgets = {
+            "email": forms.EmailInput(attrs={"placeholder":"you@example.com"})
+        }

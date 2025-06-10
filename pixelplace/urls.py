@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path, reverse_lazy
 from django.shortcuts import redirect
 from django.contrib.auth import views as auth_views
-
+from django.urls import path, include
 from core import views as core_views 
 
 urlpatterns = [
@@ -33,6 +33,12 @@ urlpatterns = [
     ),
 
     path("admin/", admin.site.urls),
+    path(
+    "canvas/<int:canvas_id>/subscribe/",
+    core_views.subscribe_canvas,
+    name="subscribe_canvas",
+    ),
+    path("i18n/", include("django.conf.urls.i18n")),
 ]
 
 def redirect_404(request, exception):

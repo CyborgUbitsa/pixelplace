@@ -1,16 +1,29 @@
-{% load static %}
+{% load i18n static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
   <meta charset="utf-8">
   <title>PixelPlace · Canvases</title>
   <link rel="stylesheet" href="{% static 'core/styles.css' %}">
   <style>
-    body{font-family:system-ui,sans-serif;padding:2rem;max-width:780px;margin:auto}
-    table{border-collapse:collapse;width:100%}
-    th,td{border:1px solid #ddd;padding:.5rem;text-align:left}
-    th{background:#f3f4f6}
-    a.btn{display:inline-block;padding:.25rem .75rem;border:1px solid #2563eb;color:#2563eb;border-radius:6px;text-decoration:none}
+    ul {
+  list-style: none;
+  padding: 0;
+}
+ul li {
+  margin: .5rem 0;
+}
+ul li a {
+  display:inline-block;
+  padding:.25rem .75rem;
+  border:1px solid #2563eb;
+  color:#2563eb;
+  border-radius:6px;
+  text-decoration:none;
+}
+
+
+    
   </style>
 </head>
 <body>
@@ -20,21 +33,34 @@
 {% else %}
 <p>logged in</p>
 {% endif %}
-  <h1>Available canvases</h1>
-  {% if canvases %}
-    <table>
-      <tr><th>ID</th><th>Name</th><th>Size</th><th></th></tr>
-      {% for c in canvases %}
-        <tr>
-          <td>{{ c.id }}</td>
-          <td>{{ c.name }}</td>
-          <td>{{ c.width }} × {{ c.height }}</td>
-          <td><a class="btn" href="{% url 'canvas' c.id %}">open</a></td>
-        </tr>
-      {% endfor %}
-    </table>
-  {% else %}
-    <p>No canvases yet.</p>
-  {% endif %}
+  <div>
+    <a href="{% url 'set_language' %}" 
+       onclick="event.preventDefault(); document.getElementById('lang-form').submit();">
+      {% get_current_language as LANG_CODE %}
+      {% if LANG_CODE == 'lv' %}
+        English
+      {% else %}
+        Latviešu
+      {% endif %}
+    </a>
+    <form id="lang-form" action="{% url 'set_language' %}" method="post" style="display:none">
+      {% csrf_token %}
+      <input name="language" value="{% if LANG_CODE == 'lv' %}en{% else %}lv{% endif %}" type="hidden">
+      <input type="hidden" name="next" value="{{ request.path }}">
+    </form>
+  </div>
+
+  <h1>{% trans "Available canvases" %}</h1>
+  <ul>
+    {% for c in canvases %}
+      <li>
+        <a href="{% url 'canvas' c.id %}">
+          {{ c.name }} — {{ c.width }}×{{ c.height }} {% trans "pixels" %}
+        </a>
+      </li>
+    {% empty %}
+      <li>{% trans "No canvases yet." %}</li>
+    {% endfor %}
+  </ul>
 </body>
 </html>

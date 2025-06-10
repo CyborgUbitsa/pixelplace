@@ -74,3 +74,14 @@ def snapshot_png(request, canvas_id: int):
     response = HttpResponse(content_type="image/png")
     img.save(response, "PNG")
     return response
+
+
+
+class CanvasSubscription(models.Model):
+    canvas = models.ForeignKey("Canvas", on_delete=models.CASCADE, related_name="subscriptions")
+    email  = models.EmailField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.email} → Canvas #{self.canvas_id}"
+
